@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:growtogether/data/awards_data.dart';
+import 'package:growtogether/models/award.dart';
 import 'package:growtogether/widgets/charts/chart_card.dart';
 import 'package:growtogether/widgets/forest_grid.dart';
 
 import 'package:growtogether/widgets/progress_card.dart';
 
-/// This path uses your uploaded file (developer instruction).
-/// We'll use it as a resource reference; your toolchain can transform it into a URL.
-const String uploadedProposalPath =
-    '/mnt/data/CLOUD-Project-Proposal.docx (2).pdf';
-
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final VoidCallback gotoProfile;
+
+  const HomeScreen({super.key, required this.gotoProfile});
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+
+    final List<Award> equippedAwards = allAwards
+        .where((a) => a.equipped == true)
+        .toList();
 
     return Scaffold(
       backgroundColor: cs.primaryContainer,
@@ -24,12 +27,8 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header with logo
             Row(
               children: [
-                // If you want to show something from the uploaded file,
-                // one way is to display a small file icon and filename.
-                // Alternatively, replace below with Image.asset / Image.file for a real logo.
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
@@ -52,21 +51,6 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                const Spacer(),
-                // small button that can open the uploaded file (example)
-                IconButton(
-                  onPressed: () {
-                    // your app can transform uploadedProposalPath into a URL and open it
-                    // or pass to a PDF viewer package.
-                    // For now this is a placeholder.
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('File path: $uploadedProposalPath'),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.description_outlined),
-                ),
               ],
             ),
 
@@ -86,7 +70,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    const ForestGrid(awards: []),
+                    ForestGrid(awards: equippedAwards),
                   ],
                 ),
               ),
@@ -145,7 +129,9 @@ class HomeScreen extends StatelessWidget {
                         const SizedBox(width: 10),
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              gotoProfile();
+                            },
                             style: OutlinedButton.styleFrom(
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
