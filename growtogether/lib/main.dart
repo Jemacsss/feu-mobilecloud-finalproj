@@ -1,4 +1,3 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:growtogether/models/user.dart';
 import 'package:growtogether/screens/awards_screen.dart';
