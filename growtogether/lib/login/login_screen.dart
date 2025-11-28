@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:growtogether/models/user.dart';
+import 'package:growtogether/sevices/auth_service.dart';
 
 
 class LoginScreen extends StatefulWidget {
@@ -27,23 +28,29 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final emailCtrl = TextEditingController();
   final passwordCtrl = TextEditingController();
+  final authService = AuthService();
 
   String error = '';
 
-  void login() {
-    if (emailCtrl.text.isEmpty || passwordCtrl.text.isEmpty) {
-      setState(() => error = 'Please fill all fields');
-      return;
-    }
-
-    widget.goToHome(
-      BaseAppUser(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: "User",
-        email: emailCtrl.text.trim(),
-      ),
-    );
+  void login() async {
+  if (emailCtrl.text.isEmpty || passwordCtrl.text.isEmpty) {
+    setState(() => error = 'Please fill all fields');
+    return;
   }
+
+  setState(() => error = '');
+
+  try {
+    final user = await authService.login(
+      email: emailCtrl.text.trim(),
+      password: passwordCtrl.text.trim(),
+    );
+
+    widget.goToHome(user);
+  } catch (e) {
+    setState(() => error = e.toString().replaceFirst("Exception: ", ""));
+  }
+}
 
   @override
   Widget build(BuildContext context) {

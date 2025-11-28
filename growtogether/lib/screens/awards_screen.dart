@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:growtogether/data/award_categories.dart';
-import 'package:growtogether/data/awards_by_categories.dart';
+
 import 'package:growtogether/models/award.dart';
+import 'package:growtogether/sevices/award_service.dart';
 
 class AwardsScreen extends StatelessWidget {
   const AwardsScreen({super.key});
@@ -10,6 +10,9 @@ class AwardsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+
+    final AwardsService service = AwardsService();
+    final categories = service.getCategories();
 
     return Scaffold(
       backgroundColor: cs.primaryContainer,
@@ -28,11 +31,11 @@ class AwardsScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         child: Column(
           children: [
-            for (final cat in awardCategories) ...[
+            for (final cat in categories) ...[
               _CategorySection(
                 name: cat.name,
                 description: cat.description,
-                awards: awardsByCategory[cat.id] ?? [],
+                awards: service.getAwardsByCategory(cat.id),
               ),
               const SizedBox(height: 26),
             ],
@@ -147,7 +150,7 @@ class _AwardsGrid extends StatelessWidget {
                     const Align(
                       alignment: Alignment.center,
                       child: Icon(Icons.lock, size: 22, color: Colors.black38),
-                    )
+                    ),
                 ],
               ),
             ),

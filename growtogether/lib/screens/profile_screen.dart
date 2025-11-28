@@ -1,6 +1,9 @@
-//needs api
-
 import 'package:flutter/material.dart';
+import 'package:growtogether/sevices/user_service.dart';
+import 'package:growtogether/widgets/profile/buddy_finder.dart';
+import 'package:growtogether/widgets/profile/no_buddy_card.dart';
+import 'package:growtogether/widgets/profile/profile_card.dart';
+import 'package:growtogether/widgets/profile/profile_header.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -10,8 +13,48 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String? generatedCode;
-  final buddyCodeCtrl = TextEditingController();
+  late UserService userService;
+
+  Map<String, dynamic>? youData;
+  Map<String, dynamic>? buddyData;
+
+  int? yourStreak;
+  double? yourXP;
+  Map<String, dynamic>? yourAchievement;
+
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final token = "YOUR_COGNITO_JWT_TOKEN";
+    userService = UserService(token: token);
+
+    loadData();
+  }
+
+  Future<void> loadData() async {
+    try {
+      final me = await userService.getMyProfile();
+      final buddy = await userService.getBuddyProfile();
+      final streak = await userService.getStreak();
+      final xp = await userService.getXP();
+      final achievement = await userService.getLatestAchievement();
+
+      setState(() {
+        youData = me;
+        buddyData = buddy;
+        yourStreak = streak;
+        yourXP = xp;
+        yourAchievement = achievement;
+        loading = false;
+      });
+    } catch (e) {
+      print("Error loading profile: $e");
+      setState(() => loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,176 +63,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       backgroundColor: cs.primaryContainer,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child: Row(
-                children: [
-                  Icon(Icons.eco, size: 50, color: cs.onSecondaryContainer),
-                  const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "grow",
-                        style: tt.titleLarge!.copyWith(fontSize: 24),
-                      ),
-                      Text(
-                        "together",
-                        style: tt.titleLarge!.copyWith(
-                          fontSize: 24,
-                          color: cs.onSecondaryContainer,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: cs.secondaryContainer.withOpacity(0.8),
-                borderRadius: BorderRadius.circular(20),
-              ),
+      body: loading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      // Avatar
-                      Container(
-                        width: 70,
-                        height: 70,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(50),
-                          image: const DecorationImage(
-                            image: AssetImage("/images/avatar_placeholder.png"),
-                            fit: BoxFit.cover,
-                          ),
+                  ProfileHeader(textTheme: tt, colorScheme: cs),
+                  const SizedBox(height: 30),
+
+                  // YOU CARD
+                  ProfileCard(
+                    title: "YOU",
+                    avatar: "assets/images/avatar_placeholder.png",
+                    name: youData?["name"] ?? "Unknown",
+                    level: youData?["levelTitle"] ?? "Level 1",
+                    course: youData?["course"] ?? "No course",
+                    streak: yourStreak ?? 0,
+                    achievement: yourAchievement?["title"] ?? "",
+                    achievementIcon:
+                        yourAchievement?["iconPath"] ?? "assets/images/awards/seed.png",
+                    xp: yourXP ?? 0.0,
+                    buttonText: "Start a Session Now",
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  buddyData == null
+                      ? const NoBuddyCard()
+                      : ProfileCard(
+                          title: "Buddy",
+                          avatar: "assets/images/avatar_placeholder.png",
+                          name: buddyData?["name"] ?? "Buddy",
+                          level: buddyData?["statusText"] ?? "",
+                          course: buddyData?["course"] ?? "",
+                          streak: buddyData?["streak"] ?? 0,
+                          achievement:
+                              buddyData?["latestAchievement"]?["title"] ?? "",
+                          achievementIcon:
+                              buddyData?["latestAchievement"]?["iconPath"] ??
+                                  "assets/images/awards/seed.png",
+                          xp: buddyData?["xp"] ?? 0.0,
+                          buttonText: "Send a Ping",
                         ),
-                      ),
 
-                      const SizedBox(width: 16),
+                  const SizedBox(height: 30),
 
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "NAME",
-                            style: tt.titleLarge!.copyWith(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text("Level 1: Sprout", style: tt.titleMedium),
-                          Text(
-                            "Looking for a Buddy",
-                            style: tt.titleMedium!.copyWith(
-                              fontSize: 12,
-                              color: cs.onSecondaryContainer.withOpacity(.7),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const Spacer(),
-
-                      Icon(Icons.edit, color: cs.onSecondaryContainer),
-                    ],
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          generatedCode = (100000 + DateTime.now().millisecond)
-                              .toString();
-                        });
-                      },
-                      child: const Text("Generate a Unique Code"),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.brown.shade400,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Center(
-                      child: Text(
-                        generatedCode ?? "Your Code Will Appear Here",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      child: const Text("Enter Buddy’s Code"),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.brown.shade400,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: TextField(
-                      controller: buddyCodeCtrl,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: const InputDecoration(
-                        labelText: "Buddy’s Code Here",
-                        labelStyle: TextStyle(color: Colors.white70),
-                        border: InputBorder.none,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      child: const Text("Random Buddy"),
-                    ),
-                  ),
+                  BuddyFinder(userService: userService),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 }

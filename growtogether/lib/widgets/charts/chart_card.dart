@@ -1,12 +1,31 @@
-import 'package:fl_chart/fl_chart.dart';
+
 import 'package:flutter/material.dart';
+import 'package:growtogether/models/daily_progress.dart';
+import 'package:growtogether/models/weekly_progress.dart';
+import 'package:growtogether/models/monthly_progress.dart';
+import 'package:growtogether/models/exp_distribution.dart';
+import 'package:growtogether/models/exp_stats.dart';
+
 import 'package:growtogether/widgets/charts/daily_progress_chart.dart';
 import 'package:growtogether/widgets/charts/exp_distribution_chart.dart';
 import 'package:growtogether/widgets/charts/weekly_progress_chart.dart';
 import 'package:growtogether/widgets/charts/monthly_progress_chart.dart';
 
 class ChartCardsSection extends StatelessWidget {
-  const ChartCardsSection({super.key});
+  final DailyProgress daily;
+  final WeeklyProgress weekly;
+  final MonthlyProgress monthly;
+  final ExpDistribution expDist;
+  final ExpStats expStats;
+
+  const ChartCardsSection({
+    super.key,
+    required this.daily,
+    required this.weekly,
+    required this.monthly,
+    required this.expDist,
+    required this.expStats,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -29,14 +48,15 @@ class ChartCardsSection extends StatelessWidget {
                   SizedBox(
                     height: 150,
                     child: DailyProgressChart(
-                      you: [FlSpot(0, 1), FlSpot(5, 2), FlSpot(10, 3)],
-                      buddy: [FlSpot(0, 1), FlSpot(5, 3), FlSpot(10, 4)],
+                      you: daily.youSpots,
+                      buddy: daily.buddySpots,
                     ),
                   ),
                 ],
               ),
             ),
           ),
+
 
           Card(
             child: Padding(
@@ -51,14 +71,15 @@ class ChartCardsSection extends StatelessWidget {
                   SizedBox(
                     height: 150,
                     child: WeeklyProgressChart(
-                      you: [3, 4, 6, 5, 7, 8, 9],
-                      buddy: [2, 3, 2, 4, 6, 7, 8],
+                      you: weekly.you.map((e) => e.toInt()).toList(),
+                      buddy: weekly.buddy.map((e) => e.toInt()).toList(),
                     ),
                   ),
                 ],
               ),
             ),
           ),
+
 
           Card(
             child: Padding(
@@ -72,12 +93,13 @@ class ChartCardsSection extends StatelessWidget {
                   const SizedBox(height: 10),
                   SizedBox(
                     height: 150,
-                    child: MonthlyProgressChart(values: [160, 180]),
+                    child: MonthlyProgressChart(values: monthly.values),
                   ),
                 ],
               ),
             ),
           ),
+
 
           Card(
             child: Padding(
@@ -91,12 +113,16 @@ class ChartCardsSection extends StatelessWidget {
                   const SizedBox(height: 10),
                   SizedBox(
                     height: 180,
-                    child: ExpDistributionChart(meHours: 12, buddyHours: 8),
+                    child: ExpDistributionChart(
+                      meHours: expDist.you,
+                      buddyHours: expDist.buddy,
+                    ),
                   ),
                 ],
               ),
             ),
           ),
+
 
           Card(
             child: Padding(
@@ -104,41 +130,38 @@ class ChartCardsSection extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text("Summary Stats", style: tt.titleLarge),
-                  ),
+                  Text("Summary Stats", style: tt.titleLarge),
                   const SizedBox(height: 10),
+
                   GridView(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 8,
-                          crossAxisSpacing: 8,
-                          childAspectRatio: 3, // width/height ratio
-                        ),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 8,
+                      crossAxisSpacing: 8,
+                      childAspectRatio: 3,
+                    ),
                     children: [
                       _buildStatTile(
                         icon: Icons.local_fire_department_outlined,
                         label: "Day Streak",
-                        value: "14 days",
+                        value: "${expStats.dayStreak} days",
                       ),
                       _buildStatTile(
                         icon: Icons.calendar_month_outlined,
                         label: "Total Days",
-                        value: "21 days",
+                        value: "${expStats.totalDays} days",
                       ),
                       _buildStatTile(
                         icon: Icons.timer_outlined,
                         label: "Daily Avg Hours",
-                        value: "2.3",
+                        value: "${expStats.dailyAverageHours}",
                       ),
                       _buildStatTile(
                         icon: Icons.access_time_outlined,
                         label: "Total Hours",
-                        value: "48.5",
+                        value: "${expStats.totalHours}",
                       ),
                     ],
                   ),

@@ -364,7 +364,7 @@ final List<Award> allAwards = [
     category: "mutual",
     title: "Mutual Moment",
     subtitle: "5+sync hours in a day",
-    iconPath: "assets/images/awards/peas.png",
+    iconPath: "assets/images/awards/pea.png",
   ),
   Award(
     id: "synchronizedMoment",

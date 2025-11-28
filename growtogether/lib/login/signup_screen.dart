@@ -1,6 +1,7 @@
 //needs api
 
 import 'package:flutter/material.dart';
+import 'package:growtogether/sevices/auth_service.dart';
 
 class SignupScreen extends StatefulWidget {
   final VoidCallback switchTheme;
@@ -23,25 +24,38 @@ class _SignupScreenState extends State<SignupScreen> {
   final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
   final confirmCtrl = TextEditingController();
+  final authService = AuthService();
 
   String error = '';
 
-  void register() {
-    if (nameCtrl.text.isEmpty ||
-        emailCtrl.text.isEmpty ||
-        passCtrl.text.isEmpty ||
-        confirmCtrl.text.isEmpty) {
-      setState(() => error = "Please fill all fields");
-      return;
-    }
-
-    if (passCtrl.text != confirmCtrl.text) {
-      setState(() => error = "Passwords do not match");
-      return;
-    }
-
-    widget.successRegister("Account created successfully!");
+  void register() async {
+  if (nameCtrl.text.isEmpty ||
+      emailCtrl.text.isEmpty ||
+      passCtrl.text.isEmpty ||
+      confirmCtrl.text.isEmpty) {
+    setState(() => error = "Please fill all fields");
+    return;
   }
+
+  if (passCtrl.text != confirmCtrl.text) {
+    setState(() => error = "Passwords do not match");
+    return;
+  }
+
+  setState(() => error = '');
+
+  try {
+    final msg = await authService.register(
+      name: nameCtrl.text.trim(),
+      email: emailCtrl.text.trim(),
+      password: passCtrl.text.trim(),
+    );
+
+    widget.successRegister(msg);
+  } catch (e) {
+    setState(() => error = e.toString().replaceFirst("Exception: ", ""));
+  }
+}
 
   @override
   Widget build(BuildContext context) {

@@ -9,8 +9,8 @@ class WeeklyProgress {
 
   factory WeeklyProgress.fromJson(Map<String, dynamic> json) {
     return WeeklyProgress(
-      you: List<double>.from(json['you'].map((v) => v.toDouble())),
-      buddy: List<double>.from(json['buddy'].map((v) => v.toDouble())),
+      you: (json["you"] as List).map((e) => (e as num).toDouble()).toList(),
+      buddy: (json["buddy"] as List).map((e) => (e as num).toDouble()).toList(),
     );
   }
 }

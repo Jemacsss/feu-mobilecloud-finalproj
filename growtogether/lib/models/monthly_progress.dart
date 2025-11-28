@@ -13,4 +13,7 @@ class MonthlyProgress {
       buddy: json[1].toDouble(),
     );
   }
+
+
+  List<double> get values => [you, buddy];
 }
